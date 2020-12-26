@@ -1,6 +1,5 @@
 package com.example.eat_res_halc.ui.cart;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -22,10 +21,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eat_res_halc.Adapter.MyCartAdapter;
 import com.example.eat_res_halc.Common.Common;
-import com.example.eat_res_halc.Common.MySwipeHelper;
 import com.example.eat_res_halc.Database.CartDataSource;
 import com.example.eat_res_halc.Database.CartDatabase;
-import com.example.eat_res_halc.Database.CartItem;
 import com.example.eat_res_halc.Database.LocalCartDataSource;
 import com.example.eat_res_halc.EventBus.CounterCartEvent;
 import com.example.eat_res_halc.EventBus.HideFabCart;
@@ -36,12 +33,9 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import io.reactivex.Single;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -105,44 +99,6 @@ public class CartFragment extends Fragment {
 
         recycler_cart.setLayoutManager(layoutManager);
         recycler_cart.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
-
-        Single<Integer> len = cartDataSource.countItemInCart(Common.currentUser.getUid());
-
-        MySwipeHelper mySwipeHelper = new MySwipeHelper(getContext(), recycler_cart, 200) {
-            @Override
-            public void instantiateMyButton(RecyclerView.ViewHolder viewHolder, List<MyButton> buffer) {
-                buffer.add(new MyButton(getContext(), "Delete", 30, 0, Color.parseColor("#FF3C30"),
-                        pos -> {
-                            System.out.println("Position ->>> " + pos);
-                            CartItem item = adapter.getItemAtPosition(pos);
-
-                            System.out.println(item);
-
-                            cartDataSource.deleteCartItem(item)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(new SingleObserver<Integer>() {
-                                        @Override
-                                        public void onSubscribe(Disposable d) {
-
-                                        }
-
-                                        @Override
-                                        public void onSuccess(Integer integer) {
-                                            adapter.notifyItemRemoved(pos);
-                                            sumAllItemsInCart(); // Update total price
-                                            EventBus.getDefault().postSticky(new CounterCartEvent(true)); //Update FAB button
-                                            Toast.makeText(getContext(), "Delete item from cart successful", Toast.LENGTH_SHORT).show();
-                                        }
-
-                                        @Override
-                                        public void onError(Throwable e) {
-                                            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        }));
-            }
-        };
 
         sumAllItemsInCart();
     }
@@ -233,6 +189,8 @@ public class CartFragment extends Fragment {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onUpdateItemInCartEvent(UpdateItemInCart event) {
+//        if (!e.getMessage().contains("Query returned empty"))
+////            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
         if (event.getCartItem() != null) {
             recyclerViewState = recycler_cart.getLayoutManager().onSaveInstanceState();
 
@@ -279,7 +237,8 @@ public class CartFragment extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
-                        Toast.makeText(getContext(), "[SUM CART]" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (!e.getMessage().contains("Query returned empty"))
+                            Toast.makeText(getContext(), "[SUM CART]" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
