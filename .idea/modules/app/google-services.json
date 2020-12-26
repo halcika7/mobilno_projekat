@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "407437677450",
+    "firebase_url": "https://eat-res-halc.firebaseio.com",
+    "project_id": "eat-res-halc",
+    "storage_bucket": "eat-res-halc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407437677450:android:fd3632c07ba335b548ee73",
+        "android_client_info": {
+          "package_name": "com.example.eat_res_halc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "407437677450-irm89jmcp1glt4fimegd4gia6jsfcq71.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eat_res_halc",
+            "certificate_hash": "c3bcabceb149260be1db942e73f5ae9c1439bc94"
+          }
+        },
+        {
+          "client_id": "407437677450-s5l5sv8pcq0d81d6mjhbs6lhnjeuqdki.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRwU_0gpnCj4nzC3zVIlr9HkPExdDeCcI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "407437677450-s5l5sv8pcq0d81d6mjhbs6lhnjeuqdki.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
