@@ -109,11 +109,12 @@
                     <com.cepheuen.elegantnumberbutton.view.ElegantNumberButton
                         android:id="@+id/number_button"
                         android:layout_width="150dp"
-                        android:layout_height="40dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginLeft="8dp"
                         android:layout_marginTop="8dp"
-                        android:layout_marginBottom="18dp"
-                        app:backGroundColor="@color/colorAccent"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center"
+                        app:backgroundTint="@color/colorAccent"
                         app:finalNumber="20"
                         app:initialNumber="1"
                         app:textColor="@android:color/white"
@@ -185,6 +186,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
+                        app:backgroundTint="@color/colorAccent"
                         android:weightSum="3" />
 
                 </LinearLayout>
@@ -221,6 +223,7 @@
                             android:layout_height="30dp"
                             android:layout_gravity="center_vertical"
                             android:layout_marginLeft="4dp"
+                            app:backgroundTint="@color/colorAccent"
                             android:layout_marginTop="4dp"
                             android:src="@drawable/ic_add_box_black_24dp"
                             android:tint="@color/colorAccent" />
