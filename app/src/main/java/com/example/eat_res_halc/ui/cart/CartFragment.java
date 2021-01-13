@@ -163,7 +163,9 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                         })
                         .addOnCompleteListener(task -> {
                             Double lat = task.getResult().getLatitude();
+                            System.out.println(lat);
                             Double lng = task.getResult().getLongitude();
+                            System.out.println(lng);
 
                             String coordinates = new StringBuilder()
                                     .append(lat).append("/").append(lng).toString();
@@ -211,7 +213,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         dialog.show();
     }
 
-    private void paymentCOD(String address, String comment) {
+    private void paymentCOD(String add, String comm) {
         compositeDisposable.add(cartDataSource.getAllCart(Common.currentUser.getUid())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -227,12 +229,15 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                                 @Override
                                 public void onSuccess(@io.reactivex.annotations.NonNull Double totalPrice) {
+                                    address = add;
+                                    comment = comm;
                                     newOrder(totalPrice, cartItems, true, "Cash On Delivery");
                                 }
 
                                 @Override
                                 public void onError(@io.reactivex.annotations.NonNull Throwable e) {
-                                    Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    if (!e.getMessage().contains("Query returned empty"))
+                                        Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
                 }, throwable -> {
@@ -421,7 +426,8 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
                         @Override
                         public void onError(Throwable e) {
-                            Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            if (!e.getMessage().contains("Query returned empty"))
+                                Toast.makeText(getContext(), "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
             return true;
@@ -572,7 +578,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
     private void newOrder(Double totalPrice, List<CartItem> cartItems, Boolean code, String transactionId) {
         User user = Common.currentUser;
-        double finalPrice = totalPrice; // improve fir discount
+        double finalPrice = totalPrice;
         Order order = new Order();
         order.setUserId(user.getUid());
         order.setUserName(user.getName());
