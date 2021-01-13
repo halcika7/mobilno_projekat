@@ -30,6 +30,12 @@
         tools:layout="@layout/fragment_cart" />
 
     <fragment
+        android:id="@+id/nav_orders"
+        android:name="com.example.eat_res_halc.ui.view_orders.OrdersFragment"
+        android:label="@string/menu_orders"
+        tools:layout="@layout/fragment_view_order" />
+
+    <fragment
         android:id="@+id/nav_food_list"
         android:name="com.example.eat_res_halc.ui.foodList.FoodListFragment"
         android:label="@string/menu_food_list"

@@ -1,5 +1,6 @@
 package com.example.eat_res_halc;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.eat_res_halc.Common.Common;
 import com.example.eat_res_halc.Model.User;
-import com.example.eat_res_halc.Remote.CloudFunctions;
+import com.example.eat_res_halc.Remote.ICloudFunctions;
 import com.example.eat_res_halc.Remote.RetrofitCloudClient;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -26,21 +27,31 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dmax.dialog.SpotsDialog;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static int APP_REQUEST_CODE = 7171;
+    private static final int APP_REQUEST_CODE = 7171;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener listener;
     private AlertDialog dialog;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private CloudFunctions cloudFunctions;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private ICloudFunctions cloudFunctions;
     private DatabaseReference userRef;
     private List<AuthUI.IdpConfig> providers;
 
@@ -48,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(listener);
-
     }
 
     @Override
@@ -74,15 +84,32 @@ public class MainActivity extends AppCompatActivity {
         userRef = FirebaseDatabase.getInstance().getReference(Common.USER_REFERENCES);
         firebaseAuth = FirebaseAuth.getInstance();
         dialog = new SpotsDialog.Builder().setCancelable(false).setContext(this).build();
-        cloudFunctions = RetrofitCloudClient.getInstance().create(CloudFunctions.class);
+        cloudFunctions = RetrofitCloudClient.getInstance().create(ICloudFunctions.class);
         listener = firebaseAuth -> {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            if (user != null) {
-                //Toast.makeText(MainActivity.this, "Already logged in", Toast.LENGTH_SHORT).show();
-                checkUserFromFirebase(user);
-            } else {
-                phoneLogin();
-            }
+
+            Dexter.withActivity(this)
+                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse response) {
+                            FirebaseUser user = firebaseAuth.getCurrentUser();
+                            if (user != null) {
+                                checkUserFromFirebase(user);
+                            } else {
+                                phoneLogin();
+                            }
+                        }
+
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse response) {
+                            Toast.makeText(MainActivity.this, "Enable this permission to use app", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+
+                        }
+                    }).check();
         };
     }
 
@@ -93,14 +120,35 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
-                            Toast.makeText(MainActivity.this, "You are already registered", Toast.LENGTH_SHORT).show();
-                            User user = snapshot.getValue(User.class);
-                            goToHomeActivity(user);
+
+                            FirebaseAuth.getInstance().getCurrentUser()
+                                    .getIdToken(true)
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show())
+                                    .addOnCompleteListener(tokenResult -> {
+                                        Common.authorizeKey = tokenResult.getResult().getToken();
+
+                                        Map<String, String> headers = new HashMap<>();
+                                        headers.put("Authorization", Common.buildToken(Common.authorizeKey));
+
+                                        compositeDisposable.add(cloudFunctions.getToken(headers)
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(braintreeToken -> {
+                                                    dialog.dismiss();
+                                                    User user = snapshot.getValue(User.class);
+                                                    goToHomeActivity(user, braintreeToken.getToken());
+                                                }, throwable -> {
+                                                    dialog.dismiss();
+                                                    Toast.makeText(MainActivity.this, "" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                                                }));
+                                    });
+
                         } else {
                             showRegisterDialog(user);
+                            dialog.dismiss();
                         }
 
-                        dialog.dismiss();
                     }
 
                     @Override
@@ -145,9 +193,29 @@ public class MainActivity extends AppCompatActivity {
             userRef.child(user.getUid()).setValue(newUser)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            dialogInterface.dismiss();
-                            Toast.makeText(this, "Congratulation! Register successful", Toast.LENGTH_SHORT).show();
-                            goToHomeActivity(newUser);
+
+                            FirebaseAuth.getInstance().getCurrentUser()
+                                    .getIdToken(true)
+                                    .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show())
+                                    .addOnCompleteListener(tokenResult -> {
+                                        Common.authorizeKey = tokenResult.getResult().getToken();
+
+                                        Map<String, String> headers = new HashMap<>();
+                                        headers.put("Authorization", Common.buildToken(Common.authorizeKey));
+
+                                        compositeDisposable.add(cloudFunctions.getToken(headers)
+                                                .subscribeOn(Schedulers.io())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(braintreeToken -> {
+                                                    dialogInterface.dismiss();
+                                                    Toast.makeText(this, "Congratulation! Register successful", Toast.LENGTH_SHORT).show();
+                                                    goToHomeActivity(newUser, braintreeToken.getToken());
+                                                }, throwable -> {
+                                                    dialog.dismiss();
+                                                    Toast.makeText(MainActivity.this, "" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                                                }));
+                                    });
+
                         }
                     });
         });
@@ -157,8 +225,9 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void goToHomeActivity(User user) {
+    private void goToHomeActivity(User user, String token) {
         Common.currentUser = user;
+        Common.currentToken = token;
         startActivity(new Intent(MainActivity.this, HomeActivity.class));
         finish();
     }

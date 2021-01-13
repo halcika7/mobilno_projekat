@@ -6,16 +6,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitCloudClient {
     private static Retrofit instance;
-
     public static Retrofit getInstance() {
-        if (instance == null) {
+        if (instance == null)
             instance = new Retrofit.Builder()
-                    .baseUrl("https://us-central1-eat-res-halc.cloudfunctions.net/")
+                    .baseUrl("https://us-central1-eat-res-halc.cloudfunctions.net/widgets/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build();
-        }
 
         return instance;
     }
+
 }

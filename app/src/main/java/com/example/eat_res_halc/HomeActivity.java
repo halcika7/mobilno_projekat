@@ -95,7 +95,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_menu, R.id.nav_food_detail,
-                R.id.nav_cart, R.id.nav_food_list)
+                R.id.nav_orders, R.id.nav_cart, R.id.nav_food_list)
                 .setDrawerLayout(drawer)
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -139,6 +139,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 break;
             case R.id.nav_cart:
                 navController.navigate(R.id.nav_cart);
+                break;
+            case R.id.nav_orders:
+                navController.navigate(R.id.nav_orders);
                 break;
             case R.id.nav_sign_out:
                 signOut();
@@ -192,7 +195,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     public void onCategorySelected(CategoryClick event) {
         if (event.isSuccess()) {
             navController.navigate(R.id.nav_food_list);
-//            Toast.makeText(this, "Click to "+event.getModel().getName(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -231,6 +233,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             if (snapshot.exists()) {
                                 Common.categorySelected = snapshot.getValue(CategoryModel.class);
+                                Common.categorySelected.setMenu_id(snapshot.getKey());
 
                                 FirebaseDatabase.getInstance()
                                         .getReference("Category")
@@ -245,6 +248,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                                 if (snapshot.exists()) {
                                                     for (DataSnapshot item : snapshot.getChildren()) {
                                                         Common.selectedFood = item.getValue(FoodModel.class);
+                                                        Common.selectedFood.setKey(snapshot.getKey());
                                                     }
                                                     navController.navigate(R.id.nav_food_detail);
 
@@ -289,6 +293,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             if (snapshot.exists()) {
                                 Common.categorySelected = snapshot.getValue(CategoryModel.class);
+                                Common.categorySelected.setMenu_id(snapshot.getKey());
 
                                 FirebaseDatabase.getInstance()
                                         .getReference("Category")
@@ -303,6 +308,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                                                 if (snapshot.exists()) {
                                                     for (DataSnapshot item : snapshot.getChildren()) {
                                                         Common.selectedFood = item.getValue(FoodModel.class);
+                                                        Common.selectedFood.setKey(snapshot.getKey());
                                                     }
                                                     navController.navigate(R.id.nav_food_detail);
 
@@ -358,5 +364,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         }
                     }
                 });
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void countCartAgain(CounterCartEvent event) {
+        if (event.isSuccess())
+            countCartItem();
     }
 }

@@ -98,7 +98,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
     ChipGroup chip_group_user_selected_addon;
     private FoodDetailViewModel foodDetailViewModel;
     private CartDataSource cartDataSource;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Unbinder unbinder;
     private android.app.AlertDialog waitingDialog;
     private BottomSheetDialog addonBottomSheetDialog;
@@ -335,7 +335,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
                 });
                 chip_group_user_selected_addon.addView(chip);
             }
-        } else if (userSelectedAddons.size() == 0)
+        } else
             chip_group_user_selected_addon.removeAllViews();
     }
 
@@ -376,13 +376,12 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
 
                             double sumRating = model.getRatingValue() + ratingValue;
                             long ratingCount = model.getRatingCount() + 1;
-                            double result = sumRating / ratingCount;
 
                             Map<String, Object> updateData = new HashMap<>();
-                            updateData.put("ratingValue", result);
+                            updateData.put("ratingValue", sumRating);
                             updateData.put("ratingCount", ratingCount);
 
-                            model.setRatingValue(result);
+                            model.setRatingValue(sumRating);
                             model.setRatingCount(ratingCount);
 
                             snapshot.getRef()
@@ -416,7 +415,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
         food_price.setText(new StringBuilder(foodModel.getPrice().toString()));
 
         if (foodModel.getRatingValue() != null)
-            ratingBar.setRating(foodModel.getRatingValue().floatValue());
+            ratingBar.setRating(foodModel.getRatingValue().floatValue() / foodModel.getRatingCount());
 
         ((AppCompatActivity) getActivity())
                 .getSupportActionBar()
@@ -452,11 +451,14 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
         double totalPrice = Double.parseDouble(Common.selectedFood.getPrice().toString()), displayPrice = 0.0;
 
         if (Common.selectedFood.getUserSelectedAddon() != null &&
-                Common.selectedFood.getUserSelectedAddon().size() > 0)
-            for (AddonModel model : Common.selectedFood.getUserSelectedAddon())
+                Common.selectedFood.getUserSelectedAddon().size() > 0) {
+            for (AddonModel model : Common.selectedFood.getUserSelectedAddon()) {
                 totalPrice += Double.parseDouble(model.getPrice().toString());
+            }
+        }
 
-        totalPrice += Double.parseDouble(Common.selectedFood.getUserSelectedSize().getPrice().toString());
+        if (Common.selectedFood.getUserSelectedSize() != null)
+            totalPrice += Double.parseDouble(Common.selectedFood.getUserSelectedSize().getPrice().toString());
 
         displayPrice = totalPrice * (Integer.parseInt(number_button.getNumber()));
         displayPrice = Math.round(displayPrice * 100.0 / 100.0);

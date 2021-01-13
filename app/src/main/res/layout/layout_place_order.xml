@@ -21,6 +21,31 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
+        android:id="@+id/txt_address_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/brandon_medium"
+        android:text="Address"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/brandon_medium">
+
+        <EditText
+            android:id="@+id/edt_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/brandon_medium"
+            android:hint="Enter your comment" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/brandon_medium"
@@ -71,7 +96,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/brandon_medium"
-        android:text="Payment  Method"
+        android:text="Payment Method"
         android:textColor="@color/dialog_header_color"
         android:textSize="22sp"
         android:textStyle="bold" />
