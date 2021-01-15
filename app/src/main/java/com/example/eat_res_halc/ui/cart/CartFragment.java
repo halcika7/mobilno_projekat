@@ -164,9 +164,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
                         })
                         .addOnCompleteListener(task -> {
                             Double lat = task.getResult().getLatitude();
-                            System.out.println(lat);
                             Double lng = task.getResult().getLongitude();
-                            System.out.println(lng);
 
                             String coordinates = new StringBuilder()
                                     .append(lat).append("/").append(lng).toString();

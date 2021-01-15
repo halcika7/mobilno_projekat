@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
                                     .addOnFailureListener(e ->
                                             Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show())
                                     .addOnCompleteListener(tokenResult -> {
-                                        System.out.println("tokenResult " + tokenResult);
                                         Common.authorizeKey = tokenResult.getResult().getToken();
 
                                         Map<String, String> headers = new HashMap<>();
@@ -141,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
                                                     goToHomeActivity(user, braintreeToken.getToken());
                                                 }, throwable -> {
                                                     dialog.dismiss();
-                                                    System.out.println("Errroooooooooor");
                                                     Toast.makeText(MainActivity.this, "" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
                                                 }));
                                     });
@@ -156,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         dialog.dismiss();
-                        System.out.println("usloo halc ovdje 3");
                         Toast.makeText(MainActivity.this, "" + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -238,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        System.out.println("Proslo dovdje 2222");
     }
 
     private void goToHomeActivity(User user, String token) {
