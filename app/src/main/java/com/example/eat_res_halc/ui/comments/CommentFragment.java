@@ -84,6 +84,9 @@ public class CommentFragment extends BottomSheetDialogFragment implements IComme
                             CommentModel model = comment.getValue(CommentModel.class);
                             commentModels.add(model);
                         }
+                        if (commentModels.size() == 0) {
+                            Toast.makeText(getContext(), "There is no comments", Toast.LENGTH_SHORT).show();
+                        }
                         listener.onCommentLoadSuccess(commentModels);
                     }
 

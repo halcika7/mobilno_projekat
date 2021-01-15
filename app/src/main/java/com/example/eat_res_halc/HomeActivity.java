@@ -163,6 +163,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                         Common.selectedFood = null;
                         Common.categorySelected = null;
                         Common.currentUser = null;
+                        Common.currentToken = "";
+                        Common.authorizeKey = "";
                         FirebaseAuth.getInstance().signOut();
 
                         Intent intent = new Intent(HomeActivity.this, MainActivity.class);

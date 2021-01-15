@@ -1,11 +1,15 @@
 package com.example.eat_res_halc.Common;
 
+import android.content.Context;
 import android.graphics.Typeface;
+import android.location.Address;
+import android.location.Geocoder;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.eat_res_halc.Model.AddonModel;
 import com.example.eat_res_halc.Model.CategoryModel;
@@ -13,6 +17,7 @@ import com.example.eat_res_halc.Model.FoodModel;
 import com.example.eat_res_halc.Model.SizeModel;
 import com.example.eat_res_halc.Model.User;
 
+import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -125,5 +130,24 @@ public class Common {
             default:
                 return "Unknown status";
         }
+    }
+
+    public static double[] getLatLngFromAddress(Context context, String address) {
+        Geocoder geocoder = new Geocoder(context);
+
+        try {
+            List<Address> addressList = geocoder.getFromLocationName(address, 1);
+            if (addressList != null && addressList.size() > 0) {
+                Double latitude = addressList.get(0).getLatitude();
+                Double longitude = addressList.get(0).getLongitude();
+                double[] coords = {latitude, longitude};
+                return coords;
+            }
+        } catch (IOException e) {
+            Toast.makeText(context, "Address is not valid", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        return null;
     }
 }

@@ -38,10 +38,10 @@ import io.reactivex.schedulers.Schedulers;
 
 public class MyFoodListAdapter extends RecyclerView.Adapter<MyFoodListAdapter.MyViewHolder> {
 
-    private Context context;
-    private List<FoodModel> foodModelList;
-    private CompositeDisposable compositeDisposable;
-    private CartDataSource cartDataSource;
+    private final Context context;
+    private final List<FoodModel> foodModelList;
+    private final CompositeDisposable compositeDisposable;
+    private final CartDataSource cartDataSource;
 
     public MyFoodListAdapter(Context context, List<FoodModel> foodModelList) {
         this.context = context;
@@ -103,7 +103,6 @@ public class MyFoodListAdapter extends RecyclerView.Adapter<MyFoodListAdapter.My
 
                         @Override
                         public void onSuccess(CartItem cartItem) {
-                            System.out.println("fjoisdjofoosdf" + cartItem.equals(item));
                             if (cartItem.equals(item)) {
                                 cartItem.setFoodQuantity(cartItem.getFoodQuantity() + 1);
 
@@ -179,7 +178,7 @@ public class MyFoodListAdapter extends RecyclerView.Adapter<MyFoodListAdapter.My
         @BindView(R.id.img_quick_cart)
         ImageView img_cart;
         IRecyclerClickListener listener;
-        private Unbinder unbinder;
+        private final Unbinder unbinder;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

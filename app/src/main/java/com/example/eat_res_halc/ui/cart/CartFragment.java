@@ -99,6 +99,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
     private MyCartAdapter adapter;
     private Unbinder unbinder;
     private CartViewModel cartViewModel;
+    private TextView txt_address;
 
     @BindView(R.id.recycler_cart)
     RecyclerView recycler_cart;
@@ -127,7 +128,7 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
 
         EditText edt_address = view.findViewById(R.id.edt_address);
         EditText edt_comment = view.findViewById(R.id.edt_comment);
-        TextView txt_address = view.findViewById(R.id.txt_address_details);
+        txt_address = view.findViewById(R.id.txt_address_details);
         RadioButton rdi_home = view.findViewById(R.id.rdi_home_address);
         RadioButton rdi_other_address = view.findViewById(R.id.rdi_other_address);
         RadioButton rdi_ship_this = view.findViewById(R.id.rdi_ship_this_address);
@@ -586,12 +587,32 @@ public class CartFragment extends Fragment implements ILoadTimeFromFirebaseListe
         order.setShippingAddress(address);
         order.setComment(comment);
 
-        if (currentLocation != null) {
+        boolean validAddress = false;
+
+        if (address == null || address == "") {
+            Toast.makeText(getContext(), "Please provide address", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double[] cords = Common.getLatLngFromAddress(getContext(), address);
+
+        if (cords != null) {
+            order.setLat(cords[0]);
+            order.setLng(cords[1]);
+            validAddress = true;
+        } else {
+            validAddress = false;
+        }
+
+        if (txt_address.getVisibility() == View.VISIBLE && currentLocation != null && validAddress) {
             order.setLat(currentLocation.getLatitude());
             order.setLng(currentLocation.getLongitude());
-        } else {
-            order.setLat(-0.1f);
-            order.setLng(-0.1f);
+            validAddress = true;
+        }
+
+        if (!validAddress) {
+            Toast.makeText(getContext(), "Please provide valid address", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         order.setCartItemList(cartItems);

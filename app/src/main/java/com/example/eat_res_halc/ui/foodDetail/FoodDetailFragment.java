@@ -292,6 +292,7 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
 
         foodDetailViewModel.getMutableLiveDataFood().observe(this, foodModel -> {
             displayInfo(foodModel);
+            displayUserSelectedAddon();
         });
 
         foodDetailViewModel.getMutableLiveDataComment().observe(this, commentModel -> {
@@ -421,6 +422,13 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
                 .getSupportActionBar()
                 .setTitle(Common.selectedFood.getName());
 
+        rdi_group_size.removeAllViews();
+        String size = null;
+        boolean isSizeSet = false;
+
+        if (Common.selectedFood.getUserSelectedSize() != null)
+            size = Common.selectedFood.getUserSelectedSize().getName();
+
         for (SizeModel model : Common.selectedFood.getSize()) {
             RadioButton button = new RadioButton(getContext());
             button.setOnCheckedChangeListener(((compoundButton, b) -> {
@@ -436,10 +444,15 @@ public class FoodDetailFragment extends Fragment implements TextWatcher {
             button.setText(model.getName());
             button.setTag(model.getPrice());
 
+            if (model.getName().equals(size)) {
+                button.setChecked(true);
+                isSizeSet = true;
+            }
+
             rdi_group_size.addView(button);
         }
 
-        if (rdi_group_size.getChildCount() > 0) {
+        if (rdi_group_size.getChildCount() > 0 && !isSizeSet) {
             RadioButton button = (RadioButton) rdi_group_size.getChildAt(0);
             button.setChecked(true);
         }

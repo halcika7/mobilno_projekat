@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
                                     .addOnFailureListener(e ->
                                             Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show())
                                     .addOnCompleteListener(tokenResult -> {
+                                        System.out.println("tokenResult " + tokenResult);
                                         Common.authorizeKey = tokenResult.getResult().getToken();
 
                                         Map<String, String> headers = new HashMap<>();
@@ -140,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
                                                     goToHomeActivity(user, braintreeToken.getToken());
                                                 }, throwable -> {
                                                     dialog.dismiss();
+                                                    System.out.println("Errroooooooooor");
                                                     Toast.makeText(MainActivity.this, "" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
                                                 }));
                                     });
@@ -154,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         dialog.dismiss();
+                        System.out.println("usloo halc ovdje 3");
                         Toast.makeText(MainActivity.this, "" + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -172,57 +175,70 @@ public class MainActivity extends AppCompatActivity {
         edt_phone.setText(user.getPhoneNumber());
 
         builder.setView(itemView);
-        builder.setNegativeButton("CANCEL", (dialogInterface, i) -> {
-            dialogInterface.dismiss();
-        });
+
+        builder.setCancelable(false);
+
         builder.setPositiveButton("REGISTER", (dialogInterface, i) -> {
-            if (TextUtils.isEmpty(edt_name.getText().toString())) {
-                Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
-                return;
-            } else if (TextUtils.isEmpty(edt_address.getText().toString())) {
-                Toast.makeText(this, "Please enter your address", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            User newUser = new User();
-            newUser.setUid(user.getUid());
-            newUser.setName(edt_name.getText().toString());
-            newUser.setAddress(edt_address.getText().toString());
-            newUser.setPhone(edt_phone.getText().toString());
-
-            userRef.child(user.getUid()).setValue(newUser)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-
-                            FirebaseAuth.getInstance().getCurrentUser()
-                                    .getIdToken(true)
-                                    .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show())
-                                    .addOnCompleteListener(tokenResult -> {
-                                        Common.authorizeKey = tokenResult.getResult().getToken();
-
-                                        Map<String, String> headers = new HashMap<>();
-                                        headers.put("Authorization", Common.buildToken(Common.authorizeKey));
-
-                                        compositeDisposable.add(cloudFunctions.getToken(headers)
-                                                .subscribeOn(Schedulers.io())
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe(braintreeToken -> {
-                                                    dialogInterface.dismiss();
-                                                    Toast.makeText(this, "Congratulation! Register successful", Toast.LENGTH_SHORT).show();
-                                                    goToHomeActivity(newUser, braintreeToken.getToken());
-                                                }, throwable -> {
-                                                    dialog.dismiss();
-                                                    Toast.makeText(MainActivity.this, "" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
-                                                }));
-                                    });
-
-                        }
-                    });
         });
 
         builder.setView(itemView);
         androidx.appcompat.app.AlertDialog dialog = builder.create();
         dialog.show();
+
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            boolean success = true;
+            double[] cords = Common.getLatLngFromAddress(this, edt_address.getText().toString());
+
+            if (TextUtils.isEmpty(edt_name.getText().toString())) {
+                Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
+                success = false;
+            } else if (TextUtils.isEmpty(edt_address.getText().toString())) {
+                Toast.makeText(this, "Please enter your address", Toast.LENGTH_SHORT).show();
+                success = false;
+            } else if (cords == null) {
+                Toast.makeText(this, "Please provide valid address", Toast.LENGTH_SHORT).show();
+                success = false;
+            }
+
+            if (success) {
+                User newUser = new User();
+                newUser.setUid(user.getUid());
+                newUser.setName(edt_name.getText().toString());
+                newUser.setAddress(edt_address.getText().toString());
+                newUser.setPhone(edt_phone.getText().toString());
+
+                userRef.child(user.getUid()).setValue(newUser)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+
+                                FirebaseAuth.getInstance().getCurrentUser()
+                                        .getIdToken(true)
+                                        .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show())
+                                        .addOnCompleteListener(tokenResult -> {
+                                            Common.authorizeKey = tokenResult.getResult().getToken();
+
+                                            Map<String, String> headers = new HashMap<>();
+                                            headers.put("Authorization", Common.buildToken(Common.authorizeKey));
+
+                                            compositeDisposable.add(cloudFunctions.getToken(headers)
+                                                    .subscribeOn(Schedulers.io())
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(braintreeToken -> {
+                                                        dialog.dismiss();
+                                                        Toast.makeText(this, "Congratulation! Register successful", Toast.LENGTH_SHORT).show();
+                                                        goToHomeActivity(newUser, braintreeToken.getToken());
+                                                    }, throwable -> {
+                                                        dialog.dismiss();
+                                                        Toast.makeText(MainActivity.this, "" + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                                                    }));
+                                        });
+
+                            }
+                        });
+
+            }
+        });
+        System.out.println("Proslo dovdje 2222");
     }
 
     private void goToHomeActivity(User user, String token) {
